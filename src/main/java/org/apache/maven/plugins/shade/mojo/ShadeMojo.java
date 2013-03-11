@@ -403,9 +403,12 @@ public class ShadeMojo
 
         String additionalExcludes =
             project.getProperties().getProperty( "maven.shade.plugin.additionalExcludes" );
-        if (additionalExcludes != null) {
+        if ( additionalExcludes != null ) {
             List<String> moreExcludes = Arrays.asList(additionalExcludes.split("(,|\\s)+"));
-            artifactSet.getExcludes().addAll(moreExcludes);
+            if ( artifactSet == null) {
+                artifactSet = new ArtifactSet();
+            }
+            artifactSet.addExcludes(moreExcludes);
         }
         ArtifactSelector artifactSelector =
             new ArtifactSelector( project.getArtifact(), artifactSet, shadedGroupFilter );
