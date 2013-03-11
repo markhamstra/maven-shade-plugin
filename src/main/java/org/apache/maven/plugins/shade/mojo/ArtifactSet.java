@@ -19,7 +19,9 @@ package org.apache.maven.plugins.shade.mojo;
  * under the License.
  */
 
+import java.util.Collection;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Jason van Zyl
@@ -38,6 +40,13 @@ public class ArtifactSet
     public Set<String> getExcludes()
     {
         return excludes;
+    }
+
+    public void addExcludes(Collection<String> moreExcludes) {
+        if ( excludes == null ) {
+            excludes = new TreeSet<String>();
+        }
+        excludes.addAll(moreExcludes);
     }
 }
 
