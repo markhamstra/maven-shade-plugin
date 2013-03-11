@@ -30,7 +30,7 @@ under the License.
   </parent>
 
   <artifactId>maven-shade-plugin</artifactId>
-  <version>3.0-SNAPSHOT</version>
+  <version>3.0-SNAPSHOT-csd-1</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Shade Plugin</name>
@@ -188,7 +188,7 @@ under the License.
           </execution>
         </executions>
       </plugin>
-    
+
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
@@ -246,4 +246,16 @@ under the License.
       </build>
     </profile>
   </profiles>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>${distRepo.snapshots.id}</id>
+      <url>${distRepo.snapshots.url}</url>
+    </snapshotRepository>
+    <repository>
+      <id>${distRepo.releases.id}</id>
+      <url>${distRepo.releases.url}</url>
+    </repository>
+  </distributionManagement>
+
 </project>
