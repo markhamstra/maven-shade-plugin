@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -60,6 +61,9 @@ public class DefaultShader
     extends AbstractLogEnabled
     implements Shader
 {
+
+    private static final String INCLUDED_ARTIFACTS_LIST_NAME =
+        "META-INF/maven-shade-included-artifacts.list";
 
     public void shade( ShadeRequest shadeRequest )
         throws IOException, MojoExecutionException
@@ -121,7 +125,8 @@ public class DefaultShader
 
                 String name = entry.getName();
 
-                if ( "META-INF/INDEX.LIST".equals( name ) )
+                if ( "META-INF/INDEX.LIST".equals( name ) ||
+                     INCLUDED_ARTIFACTS_LIST_NAME.equals( name ) )
                 {
                     // we cannot allow the jar indexes to be copied over or the
                     // jar is useless. Ideally, we could create a new one
@@ -187,6 +192,15 @@ public class DefaultShader
             {
                 transformer.modifyOutputStream( jos );
             }
+        }
+
+        if ( shadeRequest.getFullArtifactIds() != null ) {
+            jos.putNextEntry( new JarEntry( INCLUDED_ARTIFACTS_LIST_NAME ) );
+            PrintWriter pw = new PrintWriter( jos );
+            for ( String fullArtifactId : shadeRequest.getFullArtifactIds() ) {
+                pw.println( fullArtifactId );
+            }
+            pw.close();
         }
 
         IOUtil.close( jos );
