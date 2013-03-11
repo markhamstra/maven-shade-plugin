@@ -42,7 +42,7 @@ public class ArtifactSet
         return excludes;
     }
 
-    public void addExcludes(Collection<String> moreExcludes) {
+    void addExcludes(Collection<String> moreExcludes) {
         if ( excludes == null ) {
             excludes = new TreeSet<String>();
         }
