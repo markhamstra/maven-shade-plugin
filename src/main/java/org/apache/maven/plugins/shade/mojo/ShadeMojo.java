@@ -80,6 +80,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Mojo that performs shading delegating to the Shader component.
@@ -409,8 +410,15 @@ public class ShadeMojo
 
         Set<File> artifacts = new LinkedHashSet<File>();
         Set<String> artifactIds = new LinkedHashSet<String>();
+        Set<String> fullArtifactIds = new TreeSet<String>();
         Set<File> sourceArtifacts = new LinkedHashSet<File>();
 
+        String additionalExcludes =
+            project.getProperties().getProperty( "maven.shade.plugin.additionalExcludes" );
+        if (additionalExcludes != null) {
+            List<String> moreExcludes = Arrays.asList(additionalExcludes.split("(,|\\s)+"));
+            artifactSet.getExcludes().addAll(moreExcludes);
+        }
         ArtifactSelector artifactSelector =
             new ArtifactSelector( project.getArtifact(), artifactSet, shadedGroupFilter );
 
@@ -433,6 +441,7 @@ public class ShadeMojo
             }
 
             artifacts.add( project.getArtifact().getFile() );
+            fullArtifactIds.add( project.getArtifact().getId() );
 
             if ( createSourcesJar )
             {
@@ -463,6 +472,7 @@ public class ShadeMojo
 
             artifacts.add( artifact.getFile() );
             artifactIds.add( getId( artifact ) );
+            fullArtifactIds.add( artifact.getId() );
 
             if ( createSourcesJar )
             {
@@ -492,6 +502,7 @@ public class ShadeMojo
             shadeRequest.setFilters( filters );
             shadeRequest.setRelocators( relocators );
             shadeRequest.setResourceTransformers( resourceTransformers );
+            shadeRequest.setFullArtifactIds( fullArtifactIds );
 
             shader.shade( shadeRequest );
 

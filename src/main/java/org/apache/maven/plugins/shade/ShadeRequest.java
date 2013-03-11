@@ -46,6 +46,8 @@ public class ShadeRequest
 
     private boolean shadeSourcesContent;
 
+    private Set<String> fullArtifactIds;
+
     public Set<File> getJars()
     {
         return jars;
@@ -137,4 +139,21 @@ public class ShadeRequest
     {
         this.shadeSourcesContent = shadeSourcesContent;
     }
+
+    /**
+     * Set the list of artifact IDs that are returned by
+     * {@link org.apache.maven.artifact.Artifact#getId()} and consist of colon-separated group ID,
+     * artifact ID, artifact type, optional artifact classifier, and version. This is used to
+     * record the set of exact artifacts included in the shaded jar.
+     *
+     * @param fullArtifactIds set of full artifact IDs
+     */
+    public void setFullArtifactIds(Set<String> fullArtifactIds) {
+        this.fullArtifactIds = fullArtifactIds;
+    }
+
+    public Set<String> getFullArtifactIds() {
+        return fullArtifactIds;
+    }
+
 }
