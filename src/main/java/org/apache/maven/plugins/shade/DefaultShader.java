@@ -19,6 +19,9 @@ package org.apache.maven.plugins.shade;
  * under the License.
  */
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.shade.filter.Filter;
 import org.apache.maven.plugins.shade.relocation.Relocator;
@@ -33,19 +36,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -110,6 +102,8 @@ public class DefaultShader
             }
         }
 
+        Multimap<String, File> duplicates = HashMultimap.create(10000, 3);
+
         for ( File jar : shadeRequest.getJars() )
         {
 
@@ -153,6 +147,7 @@ public class DefaultShader
 
                     if ( name.endsWith( ".class" ) )
                     {
+                        duplicates.put(name, jar);
                         addRemappedClass( remapper, jos, jar, name, is );
                     }
                     else if ( shadeRequest.isShadeSourcesContent() && name.endsWith( ".java" ) )
@@ -162,7 +157,7 @@ public class DefaultShader
                         {
                             continue;
                         }
-                        
+
                         addJavaSource( resources, jos, mappedName, is, shadeRequest.getRelocators() );
                     }
                     else
@@ -184,6 +179,53 @@ public class DefaultShader
             }
 
             jarFile.close();
+        }
+
+        Multimap<Collection<File>, String> overlapping = HashMultimap.create( 20, 15 );
+
+        for ( String clazz: duplicates.keySet() )
+        {
+            Collection<File> jarz = duplicates.get( clazz );
+            if ( jarz.size() > 1 ) {
+                overlapping.put( jarz, clazz );
+            }
+        }
+
+        // Log a summary of duplicates
+        for ( Collection<File> jarz : overlapping.keySet() )
+        {
+            List<String> jarzS = new LinkedList<String>();
+
+            for (File jjar : jarz)
+                jarzS.add(jjar.getName());
+
+            List<String> classes = new LinkedList<String>();
+
+            for (String clazz : overlapping.get(jarz))
+                classes.add(clazz.replace(".class", "").replace("/", "."));
+
+            getLogger().warn(Joiner.on( ", " ).join(jarzS) + " define " + classes.size()
+                    + " overlappping classes: " );
+
+            int max = 10;
+
+            for ( int i = 0; i < Math.min(max, classes.size()); i++ )
+                getLogger().warn("  - " + classes.get(i));
+
+            if ( classes.size() > max )
+                getLogger().warn("  - " + (classes.size() - max) + " more...");
+
+        }
+
+        if (overlapping.keySet().size() > 0) {
+            getLogger().warn("maven-shade-plugin has detected that some .class files");
+            getLogger().warn("are present in two or more JARs. When this happens, only");
+            getLogger().warn("one single version of the class is copied in the uberjar.");
+            getLogger().warn("Usually this is not harmful and you can skeep these");
+            getLogger().warn("warnings, otherwise try to manually exclude artifacts");
+            getLogger().warn("based on mvn dependency:tree -Ddetail=true and the above");
+            getLogger().warn("output");
+            getLogger().warn("See http://docs.codehaus.org/display/MAVENUSER/Shade+Plugin");
         }
 
         for ( ResourceTransformer transformer : transformers )
@@ -274,7 +316,7 @@ public class DefaultShader
             }
             catch ( ZipException e )
             {
-                getLogger().warn( "We have a duplicate " + name + " in " + jar );
+                getLogger().debug("We have a duplicate " + name + " in " + jar);
             }
 
             return;
@@ -314,7 +356,7 @@ public class DefaultShader
         }
         catch ( ZipException e )
         {
-            getLogger().warn( "We have a duplicate " + mappedName + " in " + jar );
+            getLogger().debug("We have a duplicate " + mappedName + " in " + jar);
         }
     }
 
@@ -360,11 +402,11 @@ public class DefaultShader
         jos.putNextEntry( new JarEntry( name ) );
 
         String sourceContent = IOUtil.toString( new InputStreamReader( is, "UTF-8" ) );
-        
+
         for ( Relocator relocator : relocators ) {
-        	sourceContent = relocator.applyToSourceContent(sourceContent);
+            sourceContent = relocator.applyToSourceContent(sourceContent);
         }
-        
+
         OutputStreamWriter writer = new OutputStreamWriter( jos, "UTF-8" );
         IOUtil.copy( sourceContent, writer );
         writer.flush();
