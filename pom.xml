@@ -30,7 +30,7 @@ under the License.
   </parent>
 
   <artifactId>maven-shade-plugin</artifactId>
-  <version>2.0-csd-2</version>
+  <version>2.0-csd-3-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Maven Shade Plugin</name>
@@ -47,7 +47,7 @@ under the License.
     <connection>scm:git:git://github.com/mbautin/maven-shade-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:mbautin/maven-shade-plugin.git</developerConnection>
     <url>http://github.com/mbautin/maven-shade-plugin</url>
-    <tag>maven-shade-plugin-2.0-csd-2</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
