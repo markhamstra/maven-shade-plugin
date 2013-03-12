@@ -44,10 +44,12 @@ under the License.
   </prerequisites>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/plugins/tags/maven-shade-plugin-2.0</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/plugins/tags/maven-shade-plugin-2.0</developerConnection>
-    <url>http://svn.apache.org/viewvc/maven/plugins/tags/maven-shade-plugin-2.0</url>
+    <connection>scm:git:git://github.com/mbautin/maven-shade-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:mbautin/maven-shade-plugin.git</developerConnection>
+    <url>http://github.com/mbautin/maven-shade-plugin</url>
+    <tag>HEAD</tag>
   </scm>
+
   <issueManagement>
     <system>jira</system>
     <url>http://jira.codehaus.org/browse/MSHADE</url>
