@@ -1,22 +1,22 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
 <!--
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements. See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership. The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License. You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied. See the License for the
+  specific language governing permissions and limitations
+  under the License.
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -25,15 +25,15 @@ under the License.
   <parent>
     <artifactId>maven-plugins</artifactId>
     <groupId>org.apache.maven.plugins</groupId>
-    <version>23</version>
-    <relativePath>../maven-plugins/pom.xml</relativePath>
+    <version>30</version>
+    <relativePath>../../pom/maven/maven-plugins/pom.xml</relativePath>
   </parent>
 
   <artifactId>maven-shade-plugin</artifactId>
-  <version>2.0-csd-3-SNAPSHOT</version>
+  <version>3.0.0-csd-1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
-  <name>Maven Shade Plugin</name>
+  <name>Apache Maven Shade Plugin</name>
   <description>
     Repackages the project classes together with their dependencies into a single uber-jar, optionally renaming classes
     or removing unused classes.
@@ -44,26 +44,39 @@ under the License.
   </prerequisites>
 
   <scm>
-    <connection>scm:git:git://github.com/mbautin/maven-shade-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:mbautin/maven-shade-plugin.git</developerConnection>
-    <url>http://github.com/mbautin/maven-shade-plugin</url>
+    <connection>scm:git:git://github.com/markhamstra/maven-shade-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:markhamstra/maven-shade-plugin.git</developerConnection>
+    <url>http://github.com/markhamstra/maven-shade-plugin</url>
     <tag>HEAD</tag>
   </scm>
 
   <issueManagement>
     <system>jira</system>
-    <url>http://jira.codehaus.org/browse/MSHADE</url>
+    <url>https://issues.apache.org/jira/browse/MSHADE</url>
   </issueManagement>
+  <distributionManagement>
+    <snapshotRepository>
+      <id>${distRepo.snapshots.id}</id>
+      <url>${distRepo.snapshots.url}</url>
+    </snapshotRepository>
+    <repository>
+      <id>${distRepo.releases.id}</id>
+      <url>${distRepo.releases.url}</url>
+    </repository>
+  </distributionManagement>
 
   <properties>
     <mavenVersion>3.0</mavenVersion>
     <currentVersion>${project.version}</currentVersion>
-    <mavenPluginVersion>3.1</mavenPluginVersion>
+    <asmVersion>5.1</asmVersion>
   </properties>
 
   <contributors>
     <contributor>
       <name>Trask Stalnaker</name>
+    </contributor>
+    <contributor>
+      <name>Anthony Dahanne</name>
     </contributor>
   </contributors>
 
@@ -86,113 +99,117 @@ under the License.
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-compat</artifactId>
-      <version>${mavenVersion}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
       <artifactId>maven-artifact</artifactId>
       <version>${mavenVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
       <artifactId>maven-plugin-annotations</artifactId>
-      <version>${mavenPluginVersion}</version>
       <scope>provided</scope>
-     </dependency>
+    </dependency>
 
     <!-- Plexus -->
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-container-default</artifactId>
-      <version>1.0-alpha-9-stable-1</version>
-    </dependency>
-     <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-utils</artifactId>
-        <version>3.0.1</version>
+      <artifactId>plexus-utils</artifactId>
+      <version>3.0.24</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-artifact-transfer</artifactId>
+      <version>0.9.0</version>
+    </dependency>
     <!-- Others -->
     <dependency>
-      <groupId>asm</groupId>
+      <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>3.3.1</version>
+      <version>${asmVersion}</version>
     </dependency>
     <dependency>
-      <groupId>asm</groupId>
+      <groupId>org.ow2.asm</groupId>
       <artifactId>asm-commons</artifactId>
-      <version>3.3.1</version>
+      <version>${asmVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.jdom</groupId>
       <artifactId>jdom</artifactId>
-      <version>1.1</version>
+      <version>1.1.3</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-dependency-tree</artifactId>
-      <version>2.0</version>
+      <version>2.2</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
     </dependency>
     <dependency>
       <groupId>org.vafer</groupId>
       <artifactId>jdependency</artifactId>
-      <version>0.7</version>
+      <version>1.1</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-component-annotations</artifactId>
-      <version>1.5.5</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.10</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
-      <version>1.3</version>
+      <version>1.6</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>13.0</version>
+      <version>19.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>1.9.5</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <version>${mavenPluginVersion}</version>
-        <configuration>
-          <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
-        </configuration>
-        <executions>
-          <execution>
-            <id>mojo-descriptor</id>
-            <goals>
-              <goal>descriptor</goal>
-            </goals>
-          </execution>
-          <!-- if you want to generate help goal -->
-          <execution>
-            <id>help-goal</id>
-            <goals>
-              <goal>helpmojo</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <excludes combine.children="append">
+              <!-- Can't add license header otherwise the tests will fail. -->
+              <exclude>rel-path-test-files/**</exclude>
+              <exclude>src/it/dep-reduced-pom-use-base-version/repo/org/apache/maven/its/shade/drp/a/0.1-SNAPSHOT/_maven.repositories</exclude>
+              <exclude>src/it/mshade-123/sample.txt</exclude>
+              <exclude>src/it/MSHADE-133/src/main/resources/myConfig.yml</exclude>
+              <exclude>src/it/rerun-with-reloc/src/main/resources/some-ordinary-resource.txt</exclude>
+              <exclude>src/it/rerun-without-reloc/src/main/resources/some-ordinary-resource.txt</exclude>
+              <exclude>src/it/MSHADE-182/src/main/resources/META-INF/services/relocateme.Service</exclude>
+              <exclude>src/it/MSHADE-182/target/classes/META-INF/services/relocateme.Service</exclude>
+              <exclude>src/it/MSHADE-182/build.log</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
 
+    <plugins>
       <plugin>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-component-metadata</artifactId>
@@ -208,16 +225,6 @@ under the License.
 
     </plugins>
   </build>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <version>${mavenPluginVersion}</version>
-      </plugin>
-    </plugins>
-  </reporting>
 
   <profiles>
     <profile>
@@ -249,16 +256,4 @@ under the License.
       </build>
     </profile>
   </profiles>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>${distRepo.snapshots.id}</id>
-      <url>${distRepo.snapshots.url}</url>
-    </snapshotRepository>
-    <repository>
-      <id>${distRepo.releases.id}</id>
-      <url>${distRepo.releases.url}</url>
-    </repository>
-  </distributionManagement>
-
 </project>

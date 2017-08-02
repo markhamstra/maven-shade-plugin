@@ -87,10 +87,8 @@ public class ComponentsXmlResourceTransformer
 
         Xpp3Dom[] children = newDom.getChild( "components" ).getChildren( "component" );
 
-        for ( int i = 0; i < children.length; i++ )
+        for ( Xpp3Dom component : children )
         {
-            Xpp3Dom component = children[i];
-
             String role = getValue( component, "role" );
             role = getRelocatedClass( role, relocators );
             setValue( component, "role", role );
@@ -168,6 +166,9 @@ public class ComponentsXmlResourceTransformer
             }
 
             Xpp3DomWriter.write( writer, dom );
+
+            writer.close();
+            writer = null;
         }
         finally
         {

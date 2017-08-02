@@ -1,14 +1,35 @@
 package org.apache.maven.plugins.shade.relocation;
 
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
 import junit.framework.TestCase;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Test for {@link SimpleRelocator}.
  *
  * @author Benjamin Bentmann
- * @version $Id$
+ *
  */
 public class SimpleRelocatorTest
     extends TestCase
@@ -29,7 +50,7 @@ public class SimpleRelocatorTest
         assertEquals( false, relocator.canRelocatePath( "org/Foo/Class.class" ) );
 
         relocator = new SimpleRelocator( "org.foo", null, null, Arrays.asList(
-            new String[]{ "org.foo.Excluded", "org.foo.public.*", "org.foo.Public*Stuff" } ) );
+                "org.foo.Excluded", "org.foo.public.*", "org.foo.Public*Stuff") );
         assertEquals( true, relocator.canRelocatePath( "org/foo/Class" ) );
         assertEquals( true, relocator.canRelocatePath( "org/foo/Class.class" ) );
         assertEquals( true, relocator.canRelocatePath( "org/foo/excluded" ) );
@@ -58,7 +79,7 @@ public class SimpleRelocatorTest
         assertEquals( false, relocator.canRelocateClass( "org.Foo.Class" ) );
 
         relocator = new SimpleRelocator( "org.foo", null, null, Arrays.asList(
-            new String[]{ "org.foo.Excluded", "org.foo.public.*", "org.foo.Public*Stuff" } ) );
+                "org.foo.Excluded", "org.foo.public.*", "org.foo.Public*Stuff") );
         assertEquals( true, relocator.canRelocateClass( "org.foo.Class" ) );
         assertEquals( true, relocator.canRelocateClass( "org.foo.excluded" ) );
         assertEquals( false, relocator.canRelocateClass( "org.foo.Excluded" ) );
@@ -120,5 +141,19 @@ public class SimpleRelocatorTest
 
         relocator = new SimpleRelocator( "^META-INF/org.foo.xml$", "META-INF/hidden.org.foo.xml", null, null, true );
         assertEquals( "META-INF/hidden.org.foo.xml", relocator.relocatePath( "META-INF/org.foo.xml" ) );
+    }
+    
+    public void testRelocateMavenFiles()
+    {
+        SimpleRelocator relocator =
+            new SimpleRelocator( "META-INF/maven", "META-INF/shade/maven", null,
+                                 Collections.singletonList( "META-INF/maven/com.foo.bar/artifactId/pom.*" ) );
+        assertEquals( false, relocator.canRelocatePath( "META-INF/maven/com.foo.bar/artifactId/pom.properties" ) );
+        assertEquals( false, relocator.canRelocatePath( "META-INF/maven/com.foo.bar/artifactId/pom.xml" ) );
+        assertEquals( true,  relocator.canRelocatePath( "META-INF/maven/com/foo/bar/artifactId/pom.properties" ) );
+        assertEquals( true,  relocator.canRelocatePath( "META-INF/maven/com/foo/bar/artifactId/pom.xml" ) );
+        assertEquals( true,  relocator.canRelocatePath( "META-INF/maven/com-foo-bar/artifactId/pom.properties" ) );
+        assertEquals( true,  relocator.canRelocatePath( "META-INF/maven/com-foo-bar/artifactId/pom.xml" ) );
+
     }
 }

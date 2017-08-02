@@ -148,12 +148,13 @@ public class ShadeRequest
      *
      * @param fullArtifactIds set of full artifact IDs
      */
-    public void setFullArtifactIds(Set<String> fullArtifactIds) {
+    public void setFullArtifactIds( Set<String> fullArtifactIds )
+    {
         this.fullArtifactIds = fullArtifactIds;
     }
 
-    public Set<String> getFullArtifactIds() {
+    public Set<String> getFullArtifactIds()
+    {
         return fullArtifactIds;
     }
-
 }

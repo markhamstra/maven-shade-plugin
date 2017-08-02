@@ -19,12 +19,6 @@ package org.apache.maven.plugins.shade.pom;
  * under the License.
  */
 
-//package org.apache.maven.model.io.jdom;
-
-//---------------------------------/
-//- Imported classes and packages -/
-//---------------------------------/
-
 import org.apache.maven.model.ActivationFile;
 import org.apache.maven.model.ActivationOS;
 import org.apache.maven.model.ActivationProperty;
@@ -81,8 +75,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.ListIterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -92,11 +87,6 @@ import java.util.Map;
  */
 public class MavenJDOMWriter
 {
-
-    // --------------------------/
-    // - Class/Member Variables -/
-    // --------------------------/
-
     /**
      * Field factory
      */
@@ -107,19 +97,11 @@ public class MavenJDOMWriter
      */
     private String lineSeparator;
 
-    // ----------------/
-    // - Constructors -/
-    // ----------------/
-
     public MavenJDOMWriter()
     {
         factory = new DefaultJDOMFactory();
         lineSeparator = "\n";
     } // -- org.apache.maven.model.io.jdom.MavenJDOMWriter()
-
-    // -----------/
-    // - Methods -/
-    // -----------/
 
     /**
      * Method findAndReplaceProperties
@@ -135,15 +117,15 @@ public class MavenJDOMWriter
         Element element = updateElement( counter, parent, name, shouldExist );
         if ( shouldExist )
         {
-            Iterator it = props.keySet().iterator();
             Counter innerCounter = new Counter( counter.getDepth() + 1 );
-            while ( it.hasNext() )
+            // while ( it.hasNext() )
+            for ( Map.Entry<String, String> entry : ( (Map<String, String>) props ).entrySet() )
             {
-                String key = (String) it.next();
-                findAndReplaceSimpleElement( innerCounter, element, key, (String) props.get( key ), null );
+                String key = entry.getKey();
+                findAndReplaceSimpleElement( innerCounter, element, key, entry.getValue(), null );
             }
-            ArrayList lst = new ArrayList( props.keySet() );
-            it = element.getChildren().iterator();
+            List lst = new ArrayList( props.keySet() );
+            Iterator it = element.getChildren().iterator();
             while ( it.hasNext() )
             {
                 Element elem = (Element) it.next();
@@ -1136,15 +1118,11 @@ public class MavenJDOMWriter
         {
             Xpp3Dom[] childs = parentDom.getChildren();
             Collection domChilds = new ArrayList();
-            for ( int i = 0; i < childs.length; i++ )
-            {
-                domChilds.add( childs[i] );
-            }
+            Collections.addAll( domChilds, childs );
             // int domIndex = 0;
-            ListIterator it = parent.getChildren().listIterator();
-            while ( it.hasNext() )
+            for ( Object o : parent.getChildren() )
             {
-                Element elem = (Element) it.next();
+                Element elem = (Element) o;
                 Iterator it2 = domChilds.iterator();
                 Xpp3Dom corrDom = null;
                 while ( it2.hasNext() )
@@ -1167,10 +1145,9 @@ public class MavenJDOMWriter
                     parent.removeContent( elem );
                 }
             }
-            Iterator it2 = domChilds.iterator();
-            while ( it2.hasNext() )
+            for ( Object domChild : domChilds )
             {
-                Xpp3Dom dm = (Xpp3Dom) it2.next();
+                Xpp3Dom dm = (Xpp3Dom) domChild;
                 Element elem = factory.element( dm.getName(), parent.getNamespace() );
                 insertAtPreferredLocation( parent, elem, counter );
                 counter.increaseCount();
@@ -1182,42 +1159,6 @@ public class MavenJDOMWriter
             parent.setText( parentDom.getValue() );
         }
     } // -- void replaceXpp3DOM(Element, Xpp3Dom, Counter)
-
-    /**
-     * Method updateActivation
-     *
-     * @param value
-     * @param element
-     * @param counter
-     * @param xmlTag
-     */
-    /*
-     * protected void updateActivation(Activation value, String xmlTag, Counter counter, Element element) { boolean
-     * shouldExist = value != null; Element root = updateElement(counter, element, xmlTag, shouldExist); if
-     * (shouldExist) { Counter innerCount = new Counter(counter.getDepth() + 1); findAndReplaceSimpleElement(innerCount,
-     * root, "activeByDefault", !value.isActiveByDefault() ? null : String.valueOf( value.isActiveByDefault() ),
-     * "false"); findAndReplaceSimpleElement(innerCount, root, "jdk", value.getJdk(), null); updateActivationOS(
-     * value.getOs(), "os", innerCount, root); updateActivationProperty( value.getProperty(), "property", innerCount,
-     * root); updateActivationFile( value.getFile(), "file", innerCount, root); updateActivationCustom(
-     * value.getCustom(), "custom", innerCount, root); } } //-- void updateActivation(Activation, String, Counter,
-     * Element)
-     */
-
-    /**
-     * Method updateActivationCustom
-     *
-     * @param value
-     * @param element
-     * @param counter
-     * @param xmlTag
-     */
-    /*
-     * protected void updateActivationCustom(ActivationCustom value, String xmlTag, Counter counter, Element element) {
-     * boolean shouldExist = value != null; Element root = updateElement(counter, element, xmlTag, shouldExist); if
-     * (shouldExist) { Counter innerCount = new Counter(counter.getDepth() + 1); findAndReplaceXpp3DOM(innerCount, root,
-     * "configuration", (Xpp3Dom)value.getConfiguration()); findAndReplaceSimpleElement(innerCount, root, "type",
-     * value.getType(), null); } } //-- void updateActivationCustom(ActivationCustom, String, Counter, Element)
-     */
 
     /**
      * Method updateActivationFile
@@ -1289,6 +1230,7 @@ public class MavenJDOMWriter
      * @param counter
      * @param xmlTag
      */
+    //CHECKSTYLE_OFF: LineLength
     protected void updateBuild( Build value, String xmlTag, Counter counter, Element element )
     {
         boolean shouldExist = value != null;
@@ -1299,11 +1241,9 @@ public class MavenJDOMWriter
             findAndReplaceSimpleElement( innerCount, root, "sourceDirectory", value.getSourceDirectory(), null );
             findAndReplaceSimpleElement( innerCount, root, "scriptSourceDirectory", value.getScriptSourceDirectory(),
                                          null );
-            findAndReplaceSimpleElement( innerCount, root, "testSourceDirectory", value.getTestSourceDirectory(),
-                                         null );
+            findAndReplaceSimpleElement( innerCount, root, "testSourceDirectory", value.getTestSourceDirectory(), null );
             findAndReplaceSimpleElement( innerCount, root, "outputDirectory", value.getOutputDirectory(), null );
-            findAndReplaceSimpleElement( innerCount, root, "testOutputDirectory", value.getTestOutputDirectory(),
-                                         null );
+            findAndReplaceSimpleElement( innerCount, root, "testOutputDirectory", value.getTestOutputDirectory(), null );
             iterateExtension( innerCount, root, value.getExtensions(), "extensions", "extension" );
             findAndReplaceSimpleElement( innerCount, root, "defaultGoal", value.getDefaultGoal(), null );
             iterateResource( innerCount, root, value.getResources(), "resources", "resource" );
@@ -1315,6 +1255,7 @@ public class MavenJDOMWriter
             iteratePlugin( innerCount, root, value.getPlugins(), "plugins", "plugin" );
         }
     } // -- void updateBuild(Build, String, Counter, Element)
+    //CHECKSTYLE_ON: LineLength
 
     /**
      * Method updateBuildBase
@@ -1729,6 +1670,7 @@ public class MavenJDOMWriter
      * @param counter
      * @param xmlTag
      */
+    //CHECKSTYLE_OFF: LineLength
     protected void updateModelBase( ModelBase value, String xmlTag, Counter counter, Element element )
     {
         boolean shouldExist = value != null;
@@ -1744,11 +1686,11 @@ public class MavenJDOMWriter
             findAndReplaceXpp3DOM( innerCount, root, "reports", (Xpp3Dom) value.getReports() );
             updateReporting( value.getReporting(), "reporting", innerCount, root );
             updateDependencyManagement( value.getDependencyManagement(), "dependencyManagement", innerCount, root );
-            updateDistributionManagement( value.getDistributionManagement(), "distributionManagement", innerCount,
-                                          root );
+            updateDistributionManagement( value.getDistributionManagement(), "distributionManagement", innerCount, root );
             findAndReplaceProperties( innerCount, root, "properties", value.getProperties() );
         }
     } // -- void updateModelBase(ModelBase, String, Counter, Element)
+    //CHECKSTYLE_ON: LineLength
 
     /**
      * Method updateNotifier
@@ -1758,6 +1700,7 @@ public class MavenJDOMWriter
      * @param counter
      * @param xmlTag
      */
+    //CHECKSTYLE_OFF: LineLength
     protected void updateNotifier( Notifier value, String xmlTag, Counter counter, Element element )
     {
         Element root = element;
@@ -1766,17 +1709,15 @@ public class MavenJDOMWriter
         findAndReplaceSimpleElement( innerCount, root, "sendOnError",
                                      value.isSendOnError() ? null : String.valueOf( value.isSendOnError() ), "true" );
         findAndReplaceSimpleElement( innerCount, root, "sendOnFailure",
-                                     value.isSendOnFailure() ? null : String.valueOf( value.isSendOnFailure() ),
-                                     "true" );
+                                     value.isSendOnFailure() ? null : String.valueOf( value.isSendOnFailure() ), "true" );
         findAndReplaceSimpleElement( innerCount, root, "sendOnSuccess",
-                                     value.isSendOnSuccess() ? null : String.valueOf( value.isSendOnSuccess() ),
-                                     "true" );
+                                     value.isSendOnSuccess() ? null : String.valueOf( value.isSendOnSuccess() ), "true" );
         findAndReplaceSimpleElement( innerCount, root, "sendOnWarning",
-                                     value.isSendOnWarning() ? null : String.valueOf( value.isSendOnWarning() ),
-                                     "true" );
+                                     value.isSendOnWarning() ? null : String.valueOf( value.isSendOnWarning() ), "true" );
         findAndReplaceSimpleElement( innerCount, root, "address", value.getAddress(), null );
         findAndReplaceProperties( innerCount, root, "configuration", value.getConfiguration() );
     } // -- void updateNotifier(Notifier, String, Counter, Element)
+    //CHECKSTYLE_ON: LineLength
 
     /**
      * Method updateOrganization
@@ -1872,8 +1813,8 @@ public class MavenJDOMWriter
      * @param counter
      * @param xmlTag
      */
-    protected void updatePluginConfiguration( PluginConfiguration value, String xmlTag, Counter counter,
-                                              Element element )
+    //CHECKSTYLE_OFF: LineLength
+    protected void updatePluginConfiguration( PluginConfiguration value, String xmlTag, Counter counter, Element element )
     {
         boolean shouldExist = value != null;
         Element root = updateElement( counter, element, xmlTag, shouldExist );
@@ -1884,6 +1825,7 @@ public class MavenJDOMWriter
             iteratePlugin( innerCount, root, value.getPlugins(), "plugins", "plugin" );
         }
     } // -- void updatePluginConfiguration(PluginConfiguration, String, Counter, Element)
+    //CHECKSTYLE_ON: LineLength
 
     /**
      * Method updatePluginContainer
@@ -2062,9 +2004,8 @@ public class MavenJDOMWriter
         if ( shouldExist )
         {
             Counter innerCount = new Counter( counter.getDepth() + 1 );
-            findAndReplaceSimpleElement( innerCount, root, "excludeDefaults", !value.isExcludeDefaults()
-                ? null
-                : String.valueOf( value.isExcludeDefaults() ), "false" );
+            findAndReplaceSimpleElement( innerCount, root, "excludeDefaults", !value.isExcludeDefaults() ? null
+                            : String.valueOf( value.isExcludeDefaults() ), "false" );
             findAndReplaceSimpleElement( innerCount, root, "outputDirectory", value.getOutputDirectory(), null );
             iterateReportPlugin( innerCount, root, value.getPlugins(), "plugins", "plugin" );
         }
@@ -2168,12 +2109,15 @@ public class MavenJDOMWriter
         Element root = updateElement( counter, element, xmlTag, shouldExist );
         if ( shouldExist )
         {
+            //CHECKSTYLE_OFF: LineLength
+
             Counter innerCount = new Counter( counter.getDepth() + 1 );
             findAndReplaceSimpleElement( innerCount, root, "connection", value.getConnection(), null );
-            findAndReplaceSimpleElement( innerCount, root, "developerConnection", value.getDeveloperConnection(),
-                                         null );
+            findAndReplaceSimpleElement( innerCount, root, "developerConnection", value.getDeveloperConnection(), null );
             findAndReplaceSimpleElement( innerCount, root, "tag", value.getTag(), "HEAD" );
             findAndReplaceSimpleElement( innerCount, root, "url", value.getUrl(), null );
+
+            //CHECKSTYLE_ON: LineLength
         }
     } // -- void updateScm(Scm, String, Counter, Element)
 
@@ -2248,70 +2192,5 @@ public class MavenJDOMWriter
         outputter.setFormat( jdomFormat );
         outputter.output( document, writer );
     } // -- void write(Model, Document, Writer, Format)
-
-    // -----------------/
-    // - Inner Classes -/
-    // -----------------/
-
-    /**
-     * Class Counter.
-     *
-     * @version $Revision$ $Date$
-     */
-    public class Counter
-    {
-
-        // --------------------------/
-        // - Class/Member Variables -/
-        // --------------------------/
-
-        /**
-         * Field currentIndex
-         */
-        private int currentIndex = 0;
-
-        /**
-         * Field level
-         */
-        private int level;
-
-        // ----------------/
-        // - Constructors -/
-        // ----------------/
-
-        public Counter( int depthLevel )
-        {
-            level = depthLevel;
-        } // -- org.apache.maven.model.io.jdom.Counter(int)
-
-        // -----------/
-        // - Methods -/
-        // -----------/
-
-        /**
-         * Method getCurrentIndex
-         */
-        public int getCurrentIndex()
-        {
-            return currentIndex;
-        } // -- int getCurrentIndex()
-
-        /**
-         * Method getDepth
-         */
-        public int getDepth()
-        {
-            return level;
-        } // -- int getDepth()
-
-        /**
-         * Method increaseCount
-         */
-        public void increaseCount()
-        {
-            currentIndex = currentIndex + 1;
-        } // -- void increaseCount()
-
-    }
 
 }

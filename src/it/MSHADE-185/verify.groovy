@@ -1,5 +1,3 @@
-package org.apache.maven.plugins.shade;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -19,11 +17,15 @@ package org.apache.maven.plugins.shade;
  * under the License.
  */
 
-/**
- * @author Jason van Zyl
- */
-public interface ShadeConfiguration
-{
-    // no op
-    // olamy: what this class ??
-}
+File pomFile = new File( basedir, "dependency-reduced-pom.xml" );
+assert pomFile.isFile()
+
+def project = new XmlSlurper().parse( pomFile )
+
+assert project.dependencies.dependency[0].artifactId == 'tools'
+assert project.dependencies.dependency[0].groupId == 'com.sun'
+assert project.dependencies.dependency[0].version == '1.6'
+assert project.dependencies.dependency[0].scope == 'system'
+// Check that the dependency-reduced pom does not have expand properties in 
+// dependencies. They should be left untouched.
+assert project.dependencies.dependency[0].systemPath == '${java.home}/../lib/tools.jar'

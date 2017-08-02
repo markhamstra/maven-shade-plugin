@@ -82,12 +82,8 @@ public class ApacheNoticeResourceTransformer
 
     public boolean canTransformResource( String resource )
     {
-        if ( NOTICE_PATH.equalsIgnoreCase( resource ) || NOTICE_TXT_PATH.equalsIgnoreCase( resource ) )
-        {
-            return true;
-        }
+        return NOTICE_PATH.equalsIgnoreCase( resource ) || NOTICE_TXT_PATH.equalsIgnoreCase( resource );
 
-        return false;
     }
 
     public void processResource( String resource, InputStream is, List<Relocator> relocators )
@@ -126,7 +122,7 @@ public class ApacheNoticeResourceTransformer
         }
 
         String line = reader.readLine();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Set<String> currentOrg = null;
         int lineCount = 0;
         while ( line != null )
@@ -141,7 +137,7 @@ public class ApacheNoticeResourceTransformer
                     {
                         //resource-bundle 1.3 mode
                         if ( lineCount == 1
-                            && sb.toString().indexOf( "This product includes/uses software(s) developed by" ) != -1 )
+                            && sb.toString().contains( "This product includes/uses software(s) developed by" ) )
                         {
                             currentOrg = organizationEntries.get( sb.toString().trim() );
                             if ( currentOrg == null )
@@ -149,12 +145,12 @@ public class ApacheNoticeResourceTransformer
                                 currentOrg = new TreeSet<String>();
                                 organizationEntries.put( sb.toString().trim(), currentOrg );
                             }
-                            sb = new StringBuffer();
+                            sb = new StringBuilder();
                         }
                         else if ( sb.length() > 0 && currentOrg != null )
                         {
                             currentOrg.add( sb.toString() );
-                            sb = new StringBuffer();
+                            sb = new StringBuilder();
                         }
 
                     }
@@ -164,7 +160,7 @@ public class ApacheNoticeResourceTransformer
                 else
                 {
                     String ent = sb.toString();
-                    if ( ent.startsWith( projectName ) && ent.indexOf( "Copyright " ) != -1 )
+                    if ( ent.startsWith( projectName ) && ent.contains( "Copyright " ) )
                     {
                         copyright = ent;
                     }
@@ -176,7 +172,7 @@ public class ApacheNoticeResourceTransformer
                     {
                         currentOrg.add( ent );
                     }
-                    sb = new StringBuffer();
+                    sb = new StringBuilder();
                     lineCount = 0;
                     currentOrg = null;
                 }
