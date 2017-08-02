@@ -44,10 +44,12 @@
   </prerequisites>
 
   <scm>
-    <connection>scm:svn:http://svn.apache.org/repos/asf/maven/plugins/tags/maven-shade-plugin-3.0.0</connection>
-    <developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/plugins/tags/maven-shade-plugin-3.0.0</developerConnection>
-    <url>http://svn.apache.org/viewvc/maven/plugins/tags/maven-shade-plugin-3.0.0</url>
+    <connection>scm:git:git://github.com/markhamstra/maven-shade-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:markhamstra/maven-shade-plugin.git</developerConnection>
+    <url>http://github.com/markhamstra/maven-shade-plugin</url>
+    <tag>HEAD</tag>
   </scm>
+
   <issueManagement>
     <system>jira</system>
     <url>https://issues.apache.org/jira/browse/MSHADE</url>
