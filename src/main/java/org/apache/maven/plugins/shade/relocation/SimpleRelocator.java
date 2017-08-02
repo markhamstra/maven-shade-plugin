@@ -94,6 +94,17 @@ public class SimpleRelocator
 
         this.includes = normalizePatterns( includes );
         this.excludes = normalizePatterns( excludes );
+
+        // Don't replace all dots to slashes, otherwise /META-INF/maven/${groupId} can't be matched.
+        if ( includes != null && !includes.isEmpty() )
+        {
+            this.includes.addAll( includes );
+        }
+        
+        if ( excludes != null && !excludes.isEmpty() )
+        {
+            this.excludes.addAll( excludes );
+        }
     }
 
     private static Set<String> normalizePatterns( Collection<String> patterns )
@@ -170,7 +181,8 @@ public class SimpleRelocator
             return false;
         }
 
-        // Allow for annoying option of an extra / on the front of a path. See MSHADE-119; comes from getClass().getResource("/a/b/c.properties").
+        // Allow for annoying option of an extra / on the front of a path. See MSHADE-119; comes from
+        // getClass().getResource("/a/b/c.properties").
         return path.startsWith( pathPattern ) || path.startsWith ( "/" + pathPattern );
     }
 
@@ -196,15 +208,15 @@ public class SimpleRelocator
         return clazz.replaceFirst( pattern, shadedPattern );
     }
 
-	public String applyToSourceContent(String sourceContent)
-	{
+    public String applyToSourceContent( String sourceContent )
+    {
         if ( rawString )
         {
-        	return sourceContent;
+            return sourceContent;
         }
         else
         {
             return sourceContent.replaceAll( "\\b" + pattern, shadedPattern );
         }
-	}
+    }
 }

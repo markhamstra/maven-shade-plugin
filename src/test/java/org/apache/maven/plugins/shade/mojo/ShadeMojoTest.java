@@ -18,26 +18,8 @@ package org.apache.maven.plugins.shade.mojo;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.resolver.DefaultArtifactResolver;
-import org.apache.maven.artifact.versioning.VersionRange;
-import org.apache.maven.plugins.shade.ShadeRequest;
-import org.apache.maven.plugins.shade.Shader;
-import org.apache.maven.plugins.shade.filter.Filter;
-import org.apache.maven.plugins.shade.relocation.Relocator;
-import org.apache.maven.plugins.shade.relocation.SimpleRelocator;
-import org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer;
-import org.apache.maven.plugins.shade.resource.ResourceTransformer;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.PlexusTestCase;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -49,6 +31,26 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugins.shade.ShadeRequest;
+import org.apache.maven.plugins.shade.Shader;
+import org.apache.maven.plugins.shade.filter.Filter;
+import org.apache.maven.plugins.shade.relocation.Relocator;
+import org.apache.maven.plugins.shade.relocation.SimpleRelocator;
+import org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer;
+import org.apache.maven.plugins.shade.resource.ResourceTransformer;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.shared.artifact.ArtifactCoordinate;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolver;
+import org.apache.maven.shared.artifact.resolve.ArtifactResolverException;
+import org.apache.maven.shared.artifact.resolve.ArtifactResult;
+import org.codehaus.plexus.PlexusTestCase;
 
 /**
  * @author Jason van Zyl
@@ -81,7 +83,7 @@ public class ShadeMojoTest
 
         List<Relocator> relocators = new ArrayList<Relocator>();
         relocators.add( new SimpleRelocator( "org.codehaus.plexus.util", "hidden", null, Arrays.asList(
-            new String[]{ "org.codehaus.plexus.util.xml.Xpp3Dom", "org.codehaus.plexus.util.xml.pull.*" } ) ) );
+                "org.codehaus.plexus.util.xml.Xpp3Dom", "org.codehaus.plexus.util.xml.pull.*") ) );
 
         List<ResourceTransformer> resourceTransformers = new ArrayList<ResourceTransformer>();
 
@@ -121,28 +123,51 @@ public class ShadeMojoTest
         createSourcesJar.setAccessible( true );
         createSourcesJar.set( mojo, Boolean.TRUE );
 
-        // configure artifactFactory for mojo
-        ArtifactFactory artifactFactory = (ArtifactFactory) lookup( ArtifactFactory.ROLE );
-        Field artifactFactoryField = ShadeMojo.class.getDeclaredField( "artifactFactory" );
-        artifactFactoryField.setAccessible( true );
-        artifactFactoryField.set( mojo, artifactFactory );
-
         // configure artifactResolver (mocked) for mojo
-        ArtifactResolver mockArtifactResolver = new DefaultArtifactResolver()
+        ArtifactResolver mockArtifactResolver = new ArtifactResolver()
         {
-
-            public void resolve( Artifact artifact, List<ArtifactRepository> remoteRepos, ArtifactRepository repo )
-                throws ArtifactResolutionException, ArtifactNotFoundException
+            @Override
+            public ArtifactResult resolveArtifact( ProjectBuildingRequest req, final Artifact art )
+                throws ArtifactResolverException
             {
-                // artifact is resolved
-                artifact.setResolved( true );
+                return new ArtifactResult()
+                {
 
-                // set file
-                artifact.setFile( new File(
-                    artifact.getArtifactId() + "-" + artifact.getVersion() + ( artifact.getClassifier() != null ? "-"
-                        + artifact.getClassifier() : "" ) + ".jar" ) );
+                    @Override
+                    public Artifact getArtifact()
+                    {
+                        art.setResolved( true );
+                        String fileName = art.getArtifactId() + "-" + art.getVersion()
+                            + ( art.getClassifier() != null ? "-" + art.getClassifier() : "" ) + ".jar";
+                        art.setFile( new File( fileName ) );
+                        return art;
+                    }
+                };
             }
 
+            @Override
+            public ArtifactResult resolveArtifact( ProjectBuildingRequest req, final ArtifactCoordinate coordinate )
+                throws ArtifactResolverException
+            {
+                return new ArtifactResult()
+                {
+
+                    @Override
+                    public Artifact getArtifact()
+                    {
+                        Artifact art = mock( Artifact.class );
+                        when( art.getGroupId() ).thenReturn( coordinate.getGroupId() );
+                        when( art.getArtifactId() ).thenReturn( coordinate.getArtifactId() );
+                        when( art.getType() ).thenReturn( coordinate.getExtension() );
+                        when( art.getClassifier() ).thenReturn( coordinate.getClassifier() );
+                        when( art.isResolved() ).thenReturn( true );
+                        String fileName = coordinate.getArtifactId() + "-" + coordinate.getVersion()
+                            + ( coordinate.getClassifier() != null ? "-" + coordinate.getClassifier() : "" ) + ".jar";
+                        when( art.getFile() ).thenReturn( new File( fileName ) );
+                        return art;
+                    }
+                };
+            }
         };
         Field artifactResolverField = ShadeMojo.class.getDeclaredField( "artifactResolver" );
         artifactResolverField.setAccessible( true );
@@ -154,7 +179,7 @@ public class ShadeMojoTest
         Artifact artifact = new DefaultArtifact( "org.apache.myfaces.core", "myfaces-impl",
                                                  VersionRange.createFromVersion( "2.0.1-SNAPSHOT" ), "compile", "jar",
                                                  null, artifactHandler );
-        mockArtifactResolver.resolve( artifact, null, null ); // setFile and setResolved
+        artifact = mockArtifactResolver.resolveArtifact( null, artifact ).getArtifact(); // setFile and setResolved
         project.setArtifact( artifact );
         Field projectField = ShadeMojo.class.getDeclaredField( "project" );
         projectField.setAccessible( true );
@@ -171,16 +196,20 @@ public class ShadeMojoTest
         filtersField.setAccessible( true );
         filtersField.set( mojo, new ArchiveFilter[]{ archiveFilter } );
 
+        Field sessionField = ShadeMojo.class.getDeclaredField( "session" );
+        sessionField.setAccessible( true );
+        sessionField.set( mojo, mock( MavenSession.class ) );
+
         // invoke getFilters()
         Method getFilters = ShadeMojo.class.getDeclaredMethod( "getFilters", new Class[0] );
         getFilters.setAccessible( true );
-        List<Filter> filters = (List<Filter>) getFilters.invoke( mojo, new Object[0] );
+        List<Filter> filters = (List<Filter>) getFilters.invoke( mojo);
 
         // assertions - there must be one filter
         assertEquals( 1, filters.size() );
 
         // the filter must be able to filter the binary and the sources jar
-        Filter filter = (Filter) filters.get( 0 );
+        Filter filter = filters.get( 0 );
         assertTrue( filter.canFilter( new File( "myfaces-impl-2.0.1-SNAPSHOT.jar" ) ) ); // binary jar
         assertTrue( filter.canFilter( new File( "myfaces-impl-2.0.1-SNAPSHOT-sources.jar" ) ) ); // sources jar
     }
@@ -199,7 +228,7 @@ public class ShadeMojoTest
         List<Relocator> relocators = new ArrayList<Relocator>();
 
         relocators.add( new SimpleRelocator( "org/codehaus/plexus/util", shadedPattern, null, Arrays.asList(
-            new String[]{ "org/codehaus/plexus/util/xml/Xpp3Dom", "org/codehaus/plexus/util/xml/pull.*" } ) ) );
+                "org/codehaus/plexus/util/xml/Xpp3Dom", "org/codehaus/plexus/util/xml/pull.*") ) );
 
         List<ResourceTransformer> resourceTransformers = new ArrayList<ResourceTransformer>();
 

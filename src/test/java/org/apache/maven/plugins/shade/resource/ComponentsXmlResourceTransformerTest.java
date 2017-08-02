@@ -27,13 +27,14 @@ import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 
+import java.io.InputStream;
 import java.util.Collections;
 
 /**
  * Test for {@link ComponentsXmlResourceTransformer}.
  *
  * @author Brett Porter
- * @version $Id$
+ *
  */
 public class ComponentsXmlResourceTransformerTest
     extends TestCase
@@ -51,15 +52,21 @@ public class ComponentsXmlResourceTransformerTest
 
         XMLUnit.setNormalizeWhitespace( true );
 
-        transformer.processResource( "components-1.xml", getClass().getResourceAsStream( "/components-1.xml" ),
+        InputStream resourceAsStream = getClass().getResourceAsStream( "/components-1.xml" );
+        transformer.processResource( "components-1.xml", resourceAsStream,
                                      Collections.<Relocator> emptyList() );
-        transformer.processResource( "components-1.xml", getClass().getResourceAsStream( "/components-2.xml" ),
+        resourceAsStream.close();
+        InputStream resourceAsStream1 = getClass().getResourceAsStream( "/components-2.xml" );
+        transformer.processResource( "components-1.xml", resourceAsStream1,
                                      Collections.<Relocator> emptyList() );
+        resourceAsStream1.close();
+        final InputStream resourceAsStream2 = getClass().getResourceAsStream( "/components-expected.xml" );
         Diff diff = XMLUnit.compareXML(
-            IOUtil.toString( getClass().getResourceAsStream( "/components-expected.xml" ), "UTF-8" ),
+            IOUtil.toString( resourceAsStream2, "UTF-8" ),
             IOUtil.toString( transformer.getTransformedResource(), "UTF-8" ) );
         //assertEquals( IOUtil.toString( getClass().getResourceAsStream( "/components-expected.xml" ), "UTF-8" ),
         //              IOUtil.toString( transformer.getTransformedResource(), "UTF-8" ).replaceAll("\r\n", "\n") );
+        resourceAsStream2.close();
         XMLAssert.assertXMLIdentical( diff, true );
     }
 }

@@ -1,3 +1,5 @@
+package org.apache.maven.plugins.shade.mojo;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,8 +19,6 @@
  * under the License.
  */
 
-package org.apache.maven.plugins.shade.mojo;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,20 +29,23 @@ import java.util.List;
  */
 public final class RelativizePath
 {
-    private RelativizePath() {
+    private RelativizePath()
+    {
         //
     }
 
     /**
      * relativize a pathname. 
      * @param thing Absolute File of something. (e.g., a parent pom)
-     * @param relativeTo base to relativize it do. (e.g., a pom into which a relative pathname to the 'thing' is to be installed).
+     * @param relativeTo base to relativize it do. (e.g., a pom into which a relative pathname to the 'thing' is to be
+     *        installed).
      * @return
      */
-    static String convertToRelativePath(File thing, File relativeTo) {
-        StringBuilder relativePath = null;
-        
-        if ( thing.getParentFile().equals( relativeTo.getParentFile() ))
+    static String convertToRelativePath( File thing, File relativeTo )
+    {
+        StringBuilder relativePath;
+
+        if ( thing.getParentFile().equals( relativeTo.getParentFile() ) )
         {
             return thing.getName(); // a very simple relative path.
         }
@@ -51,7 +54,9 @@ public final class RelativizePath
         List<String> relativeToDirectories = RelativizePath.parentDirs( relativeTo );
     
         //Get the shortest of the two paths
-        int length = thingDirectories.size() < relativeToDirectories.size() ? thingDirectories.size() : relativeToDirectories.size();
+        int length =
+            thingDirectories.size() < relativeToDirectories.size() ? thingDirectories.size()
+                            : relativeToDirectories.size();
     
         int lastCommonRoot = -1; // index of the lowest directory down from the root that the two have in common.
         int index;
@@ -59,15 +64,18 @@ public final class RelativizePath
         //Find common root
         for ( index = 0; index < length; index++ ) 
         {
-            if ( thingDirectories.get( index ).equals(relativeToDirectories.get( index )))
+            if ( thingDirectories.get( index ).equals( relativeToDirectories.get( index ) ) )
             {
                 lastCommonRoot = index;
-            } else {
+            }
+            else
+            {
                 break;
             }
         }
-        if (lastCommonRoot != -1) { // possible on Windows or other multi-root cases.
-            //Build up the relative path
+        if ( lastCommonRoot != -1 )
+        { // possible on Windows or other multi-root cases.
+            // Build up the relative path
             relativePath = new StringBuilder();
             // add ..'s to get from the base up to the common point
             for ( index = lastCommonRoot + 1; index < relativeToDirectories.size(); index++ ) 
@@ -78,7 +86,7 @@ public final class RelativizePath
             // now add down from the common point to the actual 'thing' item. 
             for ( index = lastCommonRoot + 1; index < thingDirectories.size(); index++ ) 
             {
-                relativePath.append( thingDirectories.get( index ) + "/" );
+                relativePath.append( thingDirectories.get( index ) ).append( '/' );
             }
             relativePath.append( thing.getName() );
             return relativePath.toString();
@@ -91,7 +99,7 @@ public final class RelativizePath
         List<String> results = new ArrayList<String>();
         for ( File p = of.getParentFile() ; p != null ; p = p.getParentFile() )
         {
-            if ( !"".equals(p.getName()) )
+            if ( !"".equals( p.getName() ) )
             {
                 results.add( p.getName() );
             }
@@ -100,7 +108,4 @@ public final class RelativizePath
         Collections.reverse( results );
         return results;
     }
-    
-    
-
 }
